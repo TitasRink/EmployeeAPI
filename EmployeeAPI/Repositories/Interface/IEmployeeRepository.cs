@@ -7,13 +7,13 @@ namespace EmployeeAPI.Repositories.Interface
     public interface IEmployeeRepository
     {
         Task<Employee> AddEmployeeAsync(EmployeeDTO employeeDTO);
-        Task<Employee> DeleteEmployeeAsync(Guid employeeId);
-        Task<IEnumerable<Employee>> GetEmployeeAvarageSalaryByRole();
+        Task<Employee> DeleteEmployeeAsync(Employee employee);
+        Task<IEnumerable<Employee>> GetEmployeesByRole(string role);
         Task<Employee> GetEmployeeByIdAsync(Guid id);
         Task<IEnumerable<Employee>> GetEmployeesAsync();
-        Task<IEnumerable<Employee>> GetEmployeesBynameAndDateAsync([FromQuery] string name, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate);
-        Task<IEnumerable<Employee>> GetEmployeesByBossId(Guid bossId);
-        Task<Employee> UpdateEmployeeAsync(Guid employeeId, EmployeeDTO employeeDTO);
-        Task<Employee> UpdateEmployeeSalaryAsync(Guid employeeId, int salary);
+        Task<IEnumerable<Employee>> GetEmployeesByNameAndDateAsync([FromQuery] string name, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate);
+        Task<IEnumerable<Employee>> GetEmployeesByBossId(string role);
+        Task<EmployeeDTO> UpdateEmployeeAsync(Employee employeeOld, EmployeeDTO employeeNew);
+        Task<Employee> UpdateEmployeeSalaryAsync(Employee employee, int salary);
     }
 }

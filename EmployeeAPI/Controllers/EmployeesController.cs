@@ -23,6 +23,11 @@ namespace EmployeeAPI.Controllers
             try
             {
                 var employees = await _employeeRepository.GetEmployeesAsync();
+                if (employees == null)
+                {
+                    return NotFound("No Employee found");
+                }
+
                 return Ok(employees);
             }
             catch (Exception ex)
@@ -33,18 +38,25 @@ namespace EmployeeAPI.Controllers
         }
 
         [HttpGet("employees/{id}")]
-        public async Task<IActionResult> GetEmployee([FromRoute] Guid id)
+        public async Task<IActionResult> GetEmployee(Guid id)
         {
             try
             {
                 Employee employee = await _employeeRepository.GetEmployeeByIdAsync(id);
-                return employee == null ? throw new Exception("No Employee found") : (IActionResult)Ok(employee);
+
+                if (employee == null)
+                {
+                    return NotFound("No Employee found");
+                }
+                
+                return Ok(employee);
             }
             catch (Exception ex)
             {
                 ExeptionHandlerMiddleware.LogException(ex.Message);
                 return BadRequest(ex.Message);
             }
+         
         }
 
         [HttpGet("GetEmployeeAvarageSalaryByRole")]
@@ -54,13 +66,17 @@ namespace EmployeeAPI.Controllers
             {
                 if (string.IsNullOrEmpty(role))
                 {
-                    throw new Exception("No Role found");
+                    return NotFound("No Role found");
                 }
-                var employees = await _employeeRepository.GetEmployeeAvarageSalaryByRole() ?? 
-                    throw new Exception($"No Employees found with role: {role}");
-                var roleEmployees = employees.Where(e => e.Role == role);
-                int employeeCount = roleEmployees.Count();
-                decimal averageSalary = roleEmployees.Average(e => e.CurrentSalary);
+
+                var employees = await _employeeRepository.GetEmployeesByRole(role);
+                if (employees == null)
+                {
+                    return NotFound($"No Employees found with role: {role}");
+                }
+
+                int employeeCount = employees.Count();
+                decimal averageSalary = employees.Average(e => e.CurrentSalary);
 
                 return Ok($"Employee Count = {employeeCount}, Average Salary = {averageSalary}");
             }
@@ -77,11 +93,17 @@ namespace EmployeeAPI.Controllers
             try
             {
                 if (string.IsNullOrEmpty(id.ToString()))
-                { 
-                    throw new Exception($"No Employee found with id: {id}");
+                {
+                    return NotFound($"Field can not be empty {id}");
                 }
 
-                var employees = await _employeeRepository.GetEmployeesByBossId(id);
+                var employee = _employeeRepository.GetEmployeeByIdAsync(id);
+                var employees = await _employeeRepository.GetEmployeesByBossId(employee.Result.Boss);
+                if (employees == null)
+                { 
+                    return NotFound();
+                }
+
                 return Ok(employees);
             }
             catch (Exception ex)
@@ -96,7 +118,16 @@ namespace EmployeeAPI.Controllers
         {
             try
             {
-                var employees = await _employeeRepository.GetEmployeesBynameAndDateAsync(name, startDate, endDate);
+                if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(startDate.ToString()) || string.IsNullOrEmpty(endDate.ToString()))
+                {
+                    return NotFound("Field can not be empty");
+                }
+
+                var employees = await _employeeRepository.GetEmployeesByNameAndDateAsync(name, startDate, endDate);
+                if (employees == null) 
+                {
+                    return BadRequest();
+                }
 
                 return Ok(employees);
             }
@@ -114,12 +145,12 @@ namespace EmployeeAPI.Controllers
             {
                 if (employeeDTO == null)
                 {
-                    throw new Exception("No Employee found");
+                    return NotFound("No Employee found");
                 }
 
                 if (CheckIfCeoExist() && employeeDTO.Role == "CEO")
                 {
-                    throw new Exception("There can be only one employee with CEO role.");
+                    return BadRequest("There can be only one employee with CEO role.");
                 }
 
                 Employee employee = await _employeeRepository.AddEmployeeAsync(employeeDTO);
@@ -131,6 +162,7 @@ namespace EmployeeAPI.Controllers
             }
             catch (Exception ex)
             {
+                ExeptionHandlerMiddleware.LogException(ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -140,9 +172,14 @@ namespace EmployeeAPI.Controllers
         {
             try
             {
-                Employee employee = await _employeeRepository.DeleteEmployeeAsync(id);
+                Employee employee = _employeeRepository.GetEmployeeByIdAsync(id).Result;
+                if (employee == null)
+                {
+                    return NotFound("No Employee found");
+                }
 
-                return employee == null ? throw new Exception("No Employee found") : (IActionResult)Ok(employee);
+                employee = await _employeeRepository.DeleteEmployeeAsync(employee);
+                return Ok(employee);
             }
             catch (Exception ex)
             {
@@ -152,22 +189,27 @@ namespace EmployeeAPI.Controllers
         }
 
         [HttpPut("UpdateEmployee/{id}")]
-        public async Task<IActionResult> PutEmployee([FromRoute] Guid id, EmployeeDTO employeeDTO)
+        public async Task<IActionResult> UpdateEmployee([FromRoute] Guid id, EmployeeDTO employeeDTO)
         {
             try
             {
                 if (employeeDTO == null)
                 {
-                    throw new Exception("No Employee found");
+                    return NotFound("No Employee found");
                 }
 
                 if (CheckIfCeoExist() && employeeDTO.Role == "CEO")
                 {
-                    throw new Exception("There can be only one employee with CEO role.");
+                    return BadRequest("There can be only one employee with CEO role.");
                 }
 
-                Employee updatedEmployee = await _employeeRepository.UpdateEmployeeAsync(id, employeeDTO);
-              
+                Employee employee = _employeeRepository.GetEmployeeByIdAsync(id).Result;
+                EmployeeDTO updatedEmployee = await _employeeRepository.UpdateEmployeeAsync(employee, employeeDTO);
+                if (updatedEmployee == null) 
+                {
+                    return BadRequest($"Employee: {employee} not updated"); 
+                }
+
                 return Ok(updatedEmployee);
             }
             catch (Exception ex)
@@ -182,20 +224,20 @@ namespace EmployeeAPI.Controllers
         {
             try
             {
-                if (await _employeeRepository.GetEmployeeByIdAsync(id) == null)
+                if (_employeeRepository.GetEmployeeByIdAsync(id) == null)
                 {
-                    return BadRequest($"No employee found with id : {id}");
+                    return NotFound($"No employee found with id : {id}");
                 }
 
                 if (salary < 1) 
                 {
                     return BadRequest("Salary must be greater then 0");
                 }
-
-                var updatedEmployee = await _employeeRepository.UpdateEmployeeSalaryAsync(id, salary);
+                Employee employee = _employeeRepository.GetEmployeeByIdAsync(id).Result;
+                Employee updatedEmployee = await _employeeRepository.UpdateEmployeeSalaryAsync(employee, salary);
                 if (updatedEmployee == null)
                 {
-                    return NotFound();
+                    return BadRequest($"Employee: {employee} salary not updated");
                 }
 
                 return Ok(updatedEmployee);

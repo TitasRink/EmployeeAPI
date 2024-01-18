@@ -5,6 +5,7 @@ using EmployeeAPI.Repositories.Interface;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Xml.Linq;
 
 namespace EmployeeAPI.Repositories
 {
@@ -24,19 +25,17 @@ namespace EmployeeAPI.Repositories
             return employee;
         }
 
-        public async Task<IEnumerable<Employee>> GetEmployeesBynameAndDateAsync(
+        public async Task<IEnumerable<Employee>> GetEmployeesByNameAndDateAsync(
             [FromQuery] string name,
             [FromQuery] DateTime startDate,
             [FromQuery] DateTime endDate)
         {
             var employees = await Task.Run(() => _dbContext.Employees.AsQueryable()
-                .Where(e => (!string.IsNullOrEmpty(name) &&
-                e.FirstName.Contains(name)) &&
+                .Where(e => (e.FirstName.Contains(name)) &&
                 e.Birthdate >= startDate &&
                 e.Birthdate <= endDate).ToList());
 
             return employees;
-
         }
 
         public async Task<IEnumerable<Employee>> GetEmployeesAsync()
@@ -47,18 +46,17 @@ namespace EmployeeAPI.Repositories
             return await query;
         }
 
-        public async Task<IEnumerable<Employee>> GetEmployeesByBossId(Guid bossId)
+        public async Task<IEnumerable<Employee>> GetEmployeesByBossId(string role)
         {
-            Employee employee = await GetEmployeeByIdAsync(bossId);
-            string bossName = employee.Boss;
-            var employees = _dbContext.Employees.AsQueryable();
-            var employeesList = employees.Where(e => e.Boss == bossName).ToList();
-            return employeesList;
+            var employees = _dbContext.Employees.AsQueryable().OrderBy(e=>e.Role == role);
+           
+            return employees;
         }
 
-        public async Task<IEnumerable<Employee>> GetEmployeeAvarageSalaryByRole()
+        public async Task<IEnumerable<Employee>> GetEmployeesByRole(string role)
         {
-            var employees = await GetEmployeesAsync();
+            var employees = await Task.Run(() => _dbContext.Employees.AsQueryable()
+             .Where(e =>e.Role == role).ToList());
 
             return employees;
         }
@@ -83,27 +81,24 @@ namespace EmployeeAPI.Repositories
             return employee;
         }
 
-        public async Task<Employee> UpdateEmployeeAsync(Guid employeeId, EmployeeDTO employeeDTO)
+        public async Task<EmployeeDTO> UpdateEmployeeAsync(Employee employeeOld, EmployeeDTO employeeNew)
         {
-            Employee employeeQuery = await GetEmployeeByIdAsync(employeeId);
-            _dbContext.Entry(employeeQuery).CurrentValues.SetValues(employeeDTO);
+            _dbContext.Entry(employeeOld).CurrentValues.SetValues(employeeNew);
             await _dbContext.SaveChangesAsync();
 
-            return employeeQuery;
+            return employeeNew;
         }
 
-        public async Task<Employee> UpdateEmployeeSalaryAsync(Guid employeeId, int salary)
+        public async Task<Employee> UpdateEmployeeSalaryAsync(Employee employee, int salary)
         {
-            Employee employeeQuery = await GetEmployeeByIdAsync(employeeId);
-            employeeQuery.CurrentSalary = salary;
+            employee.CurrentSalary = salary;
             await _dbContext.SaveChangesAsync();
 
-            return employeeQuery;
+            return employee;
         }
 
-        public async Task<Employee> DeleteEmployeeAsync(Guid employeeId)
+        public async Task<Employee> DeleteEmployeeAsync(Employee employee)
         {
-            Employee employee = await GetEmployeeByIdAsync(employeeId);
             _dbContext.Employees.Remove(employee);
             await _dbContext.SaveChangesAsync();
 
