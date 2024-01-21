@@ -4,8 +4,6 @@ namespace EmployeeAPI.Models.DTO
 {
     public class EmployeeDTO
     {
-   
-
         [Required]
         public string FirstName { get; set; }
 

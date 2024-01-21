@@ -46,10 +46,11 @@ namespace EmployeeAPI.Repositories
             return await query;
         }
 
-        public async Task<IEnumerable<Employee>> GetEmployeesByBossId(string role)
+        public async Task<IEnumerable<Employee>> GetEmployeesByBossRole(string bossRole)
         {
-            var employees = _dbContext.Employees.AsQueryable().OrderBy(e=>e.Role == role);
-           
+            var employees = await Task.Run(() => _dbContext.Employees.AsQueryable()
+            .Where(e => e.Boss == bossRole).ToList());
+
             return employees;
         }
 

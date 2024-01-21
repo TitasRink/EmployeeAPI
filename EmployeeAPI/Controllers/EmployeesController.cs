@@ -42,6 +42,11 @@ namespace EmployeeAPI.Controllers
         {
             try
             {
+                if (id == Guid.Empty)
+                {
+                    return BadRequest($"Field can not be empty {id}");
+                }
+
                 Employee employee = await _employeeRepository.GetEmployeeByIdAsync(id);
 
                 if (employee == null)
@@ -56,7 +61,6 @@ namespace EmployeeAPI.Controllers
                 ExeptionHandlerMiddleware.LogException(ex.Message);
                 return BadRequest(ex.Message);
             }
-         
         }
 
         [HttpGet("GetEmployeeAvarageSalaryByRole")]
@@ -66,7 +70,7 @@ namespace EmployeeAPI.Controllers
             {
                 if (string.IsNullOrEmpty(role))
                 {
-                    return NotFound("No Role found");
+                    return BadRequest($"Field can not be empty {role}");
                 }
 
                 var employees = await _employeeRepository.GetEmployeesByRole(role);
@@ -92,13 +96,13 @@ namespace EmployeeAPI.Controllers
         {
             try
             {
-                if (string.IsNullOrEmpty(id.ToString()))
+                if (id == Guid.Empty)
                 {
-                    return NotFound($"Field can not be empty {id}");
+                    return BadRequest($"Field can not be empty {id}");
                 }
 
-                var employee = _employeeRepository.GetEmployeeByIdAsync(id);
-                var employees = await _employeeRepository.GetEmployeesByBossId(employee.Result.Boss);
+                var employee = await _employeeRepository.GetEmployeeByIdAsync(id);
+                var employees = await _employeeRepository.GetEmployeesByBossRole(employee.Boss);
                 if (employees == null)
                 { 
                     return NotFound();
@@ -120,7 +124,7 @@ namespace EmployeeAPI.Controllers
             {
                 if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(startDate.ToString()) || string.IsNullOrEmpty(endDate.ToString()))
                 {
-                    return NotFound("Field can not be empty");
+                    return BadRequest("Fields can not be empty");
                 }
 
                 var employees = await _employeeRepository.GetEmployeesByNameAndDateAsync(name, startDate, endDate);
@@ -145,7 +149,7 @@ namespace EmployeeAPI.Controllers
             {
                 if (employeeDTO == null)
                 {
-                    return NotFound("No Employee found");
+                    return BadRequest("Fill employee field");
                 }
 
                 if (CheckIfCeoExist() && employeeDTO.Role == "CEO")
@@ -172,6 +176,11 @@ namespace EmployeeAPI.Controllers
         {
             try
             {
+                if (id == Guid.Empty)
+                {
+                    return BadRequest("Fill Id field");
+                }
+
                 Employee employee = _employeeRepository.GetEmployeeByIdAsync(id).Result;
                 if (employee == null)
                 {
@@ -193,9 +202,9 @@ namespace EmployeeAPI.Controllers
         {
             try
             {
-                if (employeeDTO == null)
+                if (employeeDTO == null || id == Guid.Empty)
                 {
-                    return NotFound("No Employee found");
+                    return BadRequest("No Employee found");
                 }
 
                 if (CheckIfCeoExist() && employeeDTO.Role == "CEO")
@@ -233,7 +242,7 @@ namespace EmployeeAPI.Controllers
                 {
                     return BadRequest("Salary must be greater then 0");
                 }
-                Employee employee = _employeeRepository.GetEmployeeByIdAsync(id).Result;
+                Employee employee = await _employeeRepository.GetEmployeeByIdAsync(id);
                 Employee updatedEmployee = await _employeeRepository.UpdateEmployeeSalaryAsync(employee, salary);
                 if (updatedEmployee == null)
                 {

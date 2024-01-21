@@ -12,7 +12,7 @@ namespace EmployeeAPI.Repositories.Interface
         Task<Employee> GetEmployeeByIdAsync(Guid id);
         Task<IEnumerable<Employee>> GetEmployeesAsync();
         Task<IEnumerable<Employee>> GetEmployeesByNameAndDateAsync([FromQuery] string name, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate);
-        Task<IEnumerable<Employee>> GetEmployeesByBossId(string role);
+        Task<IEnumerable<Employee>> GetEmployeesByBossRole(string bossRole);
         Task<EmployeeDTO> UpdateEmployeeAsync(Employee employeeOld, EmployeeDTO employeeNew);
         Task<Employee> UpdateEmployeeSalaryAsync(Employee employee, int salary);
     }
