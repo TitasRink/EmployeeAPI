@@ -3,9 +3,7 @@ using EmployeeAPI.Models;
 using EmployeeAPI.Models.DTO;
 using EmployeeAPI.Repositories.Interface;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Data;
-using System.Xml.Linq;
 
 namespace EmployeeAPI.Repositories
 {
@@ -22,42 +20,42 @@ namespace EmployeeAPI.Repositories
         {
             var employee = await _dbContext.Employees.FindAsync(id);
 
+            if (employee == null)
+                return null;
+
             return employee;
         }
 
-        public async Task<IEnumerable<Employee>> GetEmployeesByNameAndDateAsync(
+        public IEnumerable<Employee> GetEmployeesByNameAndDate(
             [FromQuery] string name,
             [FromQuery] DateTime startDate,
             [FromQuery] DateTime endDate)
         {
-            var employees = await Task.Run(() => _dbContext.Employees.AsQueryable()
+            var employees = _dbContext.Employees
                 .Where(e => (e.FirstName.Contains(name)) &&
                 e.Birthdate >= startDate &&
-                e.Birthdate <= endDate).ToList());
+                e.Birthdate <= endDate).ToList();
 
             return employees;
         }
 
-        public async Task<IEnumerable<Employee>> GetEmployeesAsync()
+        public IEnumerable<Employee> GetEmployees()
         {
-            var query = (from employees in _dbContext.Employees
-                         select employees).ToListAsync();
+            var query = _dbContext.Employees.ToList();
 
-            return await query;
+            return query;
         }
 
-        public async Task<IEnumerable<Employee>> GetEmployeesByBossRole(string bossRole)
+        public IEnumerable<Employee> GetEmployeesByBossRole(string bossRole)
         {
-            var employees = await Task.Run(() => _dbContext.Employees.AsQueryable()
-            .Where(e => e.Boss == bossRole).ToList());
+            var employees = _dbContext.Employees.Where(e => e.Boss == bossRole).ToList();
 
             return employees;
         }
 
-        public async Task<IEnumerable<Employee>> GetEmployeesByRole(string role)
+        public IEnumerable<Employee> GetEmployeesByRole(string role)
         {
-            var employees = await Task.Run(() => _dbContext.Employees.AsQueryable()
-             .Where(e =>e.Role == role).ToList());
+            var employees = _dbContext.Employees.Where(e => e.Role == role).ToList();
 
             return employees;
         }

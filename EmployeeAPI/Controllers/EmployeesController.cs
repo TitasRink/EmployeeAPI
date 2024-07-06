@@ -18,11 +18,11 @@ namespace EmployeeAPI.Controllers
         }
 
         [HttpGet("GetEmployees")]
-        public async Task<IActionResult> GetEmployees()
+        public IActionResult GetEmployees()
         {
             try
             {
-                var employees = await _employeeRepository.GetEmployeesAsync();
+                var employees = _employeeRepository.GetEmployees();
                 if (employees == null)
                 {
                     return NotFound("No Employee found");
@@ -38,7 +38,7 @@ namespace EmployeeAPI.Controllers
         }
 
         [HttpGet("employees/{id}")]
-        public async Task<IActionResult> GetEmployee(Guid id)
+        public async Task<IActionResult> GetEmployeeAsync(Guid id)
         {
             try
             {
@@ -64,7 +64,7 @@ namespace EmployeeAPI.Controllers
         }
 
         [HttpGet("GetEmployeeAvarageSalaryByRole")]
-        public async Task<IActionResult> GetEmployeeAvarageSalaryByRole(string role)
+        public IActionResult GetEmployeeAvarageSalaryByRole(string role)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace EmployeeAPI.Controllers
                     return BadRequest($"Field can not be empty {role}");
                 }
 
-                var employees = await _employeeRepository.GetEmployeesByRole(role);
+                var employees = _employeeRepository.GetEmployeesByRole(role);
                 if (employees == null)
                 {
                     return NotFound($"No Employees found with role: {role}");
@@ -90,9 +90,9 @@ namespace EmployeeAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+
         [HttpGet("GetEmployeesByBossId/{id}")]
-        public async Task<IActionResult> GetEmployeesByBossId(Guid id)
+        public async Task<IActionResult> GetEmployeesByBossIdAsync(Guid id)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace EmployeeAPI.Controllers
                 }
 
                 var employee = await _employeeRepository.GetEmployeeByIdAsync(id);
-                var employees = await _employeeRepository.GetEmployeesByBossRole(employee.Boss);
+                var employees = _employeeRepository.GetEmployeesByBossRole(employee.Boss);
                 if (employees == null)
                 { 
                     return NotFound();
@@ -117,8 +117,8 @@ namespace EmployeeAPI.Controllers
             }
         }
 
-        [HttpGet("GetEmployeesBynameAndDateAsync")]
-        public async Task<IActionResult> GetEmployeesBynameAndDateAsync(string name, DateTime startDate, DateTime endDate)
+        [HttpGet("GetEmployeesBynameAndDate")]
+        public IActionResult GetEmployeesBynameAndDate(string name, DateTime startDate, DateTime endDate)
         {
             try
             {
@@ -127,8 +127,8 @@ namespace EmployeeAPI.Controllers
                     return BadRequest("Fields can not be empty");
                 }
 
-                var employees = await _employeeRepository.GetEmployeesByNameAndDateAsync(name, startDate, endDate);
-                if (employees == null) 
+                var employees = _employeeRepository.GetEmployeesByNameAndDate(name, startDate, endDate);
+                if (employees == null)
                 {
                     return BadRequest();
                 }
@@ -143,7 +143,7 @@ namespace EmployeeAPI.Controllers
         }
 
         [HttpPost("AddEmployee")]
-        public async Task<IActionResult> PostEmployee(EmployeeDTO employeeDTO)
+        public async Task<IActionResult> PostEmployeeAsync(EmployeeDTO employeeDTO)
         {
             try
             {
@@ -172,7 +172,7 @@ namespace EmployeeAPI.Controllers
         }
 
         [HttpDelete("DeleteEmployee/{id}")]
-        public async Task<IActionResult> DeleteEmployee([FromRoute] Guid id)
+        public async Task<IActionResult> DeleteEmployeeAsync([FromRoute] Guid id)
         {
             try
             {
@@ -198,7 +198,7 @@ namespace EmployeeAPI.Controllers
         }
 
         [HttpPut("UpdateEmployee/{id}")]
-        public async Task<IActionResult> UpdateEmployee([FromRoute] Guid id, EmployeeDTO employeeDTO)
+        public async Task<IActionResult> UpdateEmployeeAsync([FromRoute] Guid id, EmployeeDTO employeeDTO)
         {
             try
             {
@@ -260,15 +260,9 @@ namespace EmployeeAPI.Controllers
 
         private bool CheckIfCeoExist()
         {
-            var employees = _employeeRepository.GetEmployeesAsync();
-            var ceoCount = employees.Result.FirstOrDefault(e => e.Role == "CEO");
+            var employees = _employeeRepository.GetEmployees().FirstOrDefault(e => e.Role == "CEO");
 
-            if (ceoCount == null)
-            {
-                return false;
-            }
-
-            return true;
+            return employees != null;
         }
     }
 }

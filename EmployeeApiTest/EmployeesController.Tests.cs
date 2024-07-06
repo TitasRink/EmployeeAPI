@@ -61,9 +61,9 @@ namespace EmployeeApiTest
             // Arrange
 
             // Act
-            _mockRepo.Setup(repo => repo.GetEmployeesAsync()).ReturnsAsync(new List<Employee> { employeeOne, employeeTwo });
+            _mockRepo.Setup(repo => repo.GetEmployees()).ReturnsAsync(new List<Employee> { employeeOne, employeeTwo });
 
-            var result = await _controller.GetEmployees();
+            var result = _controller.GetEmployees();
             var okResult = Assert.IsType<OkObjectResult>(result);
             var employees = Assert.IsAssignableFrom<IEnumerable<Employee>>(okResult.Value);
 
@@ -99,7 +99,7 @@ namespace EmployeeApiTest
             // Act
             _mockRepo.Setup(repo => repo.GetEmployeesByRole(role)).ReturnsAsync(new List<Employee> { employeeTwo, employeeThree });
 
-            var result = await _controller.GetEmployeeAvarageSalaryByRole(role);
+            var result = _controller.GetEmployeeAvarageSalaryByRole(role);
             var okResult = Assert.IsType<OkObjectResult>(result);
             var resultAvarageSalary = Assert.IsType<string>(okResult.Value);
 
@@ -212,9 +212,9 @@ namespace EmployeeApiTest
 
         private async Task<Employee> GetFirstEmploye()
         {
-            _mockRepo.Setup(repo => repo.GetEmployeesAsync()).ReturnsAsync(new List<Employee> { employeeOne, employeeTwo, employeeThree });
+            _mockRepo.Setup(repo => repo.GetEmployees()).ReturnsAsync(new List<Employee> { employeeOne, employeeTwo, employeeThree });
             
-            var employees = await _controller.GetEmployees();
+            var employees = _controller.GetEmployees();
             var employeeOkResult = Assert.IsType<OkObjectResult>(employees);
             var employeeFirst = Assert.IsAssignableFrom<IEnumerable<Employee>>(employeeOkResult.Value).First();
 

@@ -66,7 +66,7 @@ namespace EmployeeApiTest
             await employeeRepository.AddEmployeeAsync(employeeOne);
 
             // Act
-            var employee = employeeRepository.GetEmployeesAsync().Result.FirstOrDefault();
+            var employee = employeeRepository.GetEmployees().Result.FirstOrDefault();
 
             // Assert
             Assert.Equal(employee.FirstName, employeeOne.FirstName);
@@ -80,7 +80,7 @@ namespace EmployeeApiTest
             await employeeRepository.AddEmployeeAsync(employeeTwo);
 
             // Act
-            var employee = employeeRepository.GetEmployeesAsync().Result;
+            var employee = employeeRepository.GetEmployees().Result;
 
             // Assert
             Assert.Equal(2, employee.Count());
@@ -128,7 +128,7 @@ namespace EmployeeApiTest
             await employeeRepository.AddEmployeeAsync(employeeOne);
 
             // Act
-            var employee = employeeRepository.GetEmployeesAsync().Result.FirstOrDefault();
+            var employee = employeeRepository.GetEmployees().Result.FirstOrDefault();
             var employeeDeleted = employeeRepository.DeleteEmployeeAsync(employee).Result;
 
             // Assert
@@ -142,7 +142,7 @@ namespace EmployeeApiTest
             await employeeRepository.AddEmployeeAsync(employeeOne);
 
             // Act
-            Guid id = employeeRepository.GetEmployeesAsync().Result.FirstOrDefault().Id;
+            Guid id = employeeRepository.GetEmployees().Result.FirstOrDefault().Id;
             var employee = employeeRepository.GetEmployeeByIdAsync(id).Result;
 
             // Assert
@@ -161,7 +161,7 @@ namespace EmployeeApiTest
             await employeeRepository.AddEmployeeAsync(employeeThree);
 
             // Act
-            var employees = employeeRepository.GetEmployeesByNameAndDateAsync(name, employmentStartDate, employmentEndDate).Result;
+            var employees = employeeRepository.GetEmployeesByNameAndDate(name, employmentStartDate, employmentEndDate).Result;
 
             // Assert
             Assert.Equal(2, employees.Count());
@@ -199,7 +199,7 @@ namespace EmployeeApiTest
             await employeeRepository.AddEmployeeAsync(employeeTwo);
 
             // Act
-            var employeeToUpdate = employeeRepository.GetEmployeesAsync().Result.FirstOrDefault();
+            var employeeToUpdate = employeeRepository.GetEmployees().Result.FirstOrDefault();
             var employeeUpdated = employeeRepository.UpdateEmployeeAsync(employeeToUpdate, employeeTwo).Result;
 
             // Assert
@@ -216,7 +216,7 @@ namespace EmployeeApiTest
             await employeeRepository.AddEmployeeAsync(employeeOne);
 
             // Act
-            var employee = employeeRepository.GetEmployeesAsync().Result.FirstOrDefault();
+            var employee = employeeRepository.GetEmployees().Result.FirstOrDefault();
 
             var employeeUpdated = employeeRepository.UpdateEmployeeSalaryAsync(employee, salaryNew).Result;
 
